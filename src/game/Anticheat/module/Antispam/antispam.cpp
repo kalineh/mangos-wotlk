@@ -137,6 +137,14 @@ void Antispam::Notify(const char *format, ...)
 void Antispam::Silence(const char *format, ...)
 {
     auto const session = sWorld.FindSession(_account);
+    if (session)
+    {
+        if (auto const player = session->GetPlayer())
+        {
+            if (player->GetPlayerbotAI())
+                return;
+        }
+    }
 
     // do not log or notify GMs if the account is already silenced
     if (!!session && sAntispamMgr.IsSilenced(session))

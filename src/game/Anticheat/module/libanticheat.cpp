@@ -1082,6 +1082,15 @@ void SessionAnticheat::RecordCheatInternal(CheatType cheat, const char *format, 
     if (!sAnticheatConfig.CheckResponse(cheat, _cheatOccuranceTick[cheat], _cheatOccuranceTotal[cheat], actionMask))
         return;
 
+    if (_session)
+    {
+        if (auto player = _session->GetPlayer())
+        {
+            if (player->GetPlayerbotAI())
+                actionMask &= ~CHEAT_ACTION_SILENCE;
+        }
+    }
+
     auto constexpr activeActionMask = CHEAT_ACTION_KICK | CHEAT_ACTION_BAN_ACCOUNT | CHEAT_ACTION_BAN_IP | CHEAT_ACTION_SILENCE;
 
     // special handling for cheats detected by Warden to make it harder for hack and bot authors to analyze
@@ -1268,4 +1277,3 @@ AnticheatLibInterface* GetAnticheatLib()
     static NamreebAnticheat::AnticheatLib l;
     return &l;
 }
-

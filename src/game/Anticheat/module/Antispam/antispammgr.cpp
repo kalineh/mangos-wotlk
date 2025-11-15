@@ -12,6 +12,7 @@
 #include "World/World.h"
 #include "Accounts/AccountMgr.h"
 #include "Log/Log.h"
+#include "Entities/Player.h"
 
 #include "Database/DatabaseEnv.h"
 #include "Policies/Singleton.h"
@@ -407,9 +408,16 @@ bool AntispamMgr::IsSilenced(const WorldSession *session) const
 
 void AntispamMgr::Silence(uint32 accountId) const
 {
-    // ACCOUNT FLAGS
     if (auto session = sWorld.FindSession(accountId))
+    {
+        if (auto player = session->GetPlayer())
+        {
+            if (player->GetPlayerbotAI())
+                return;
+        }
+
         session->AddAccountFlag(ACCOUNT_FLAG_SILENCED);
+    }
 
     LoginDatabase.BeginTransaction();
 

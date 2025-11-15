@@ -24,6 +24,7 @@
 #include "Server/WorldSession.h"
 #include "World/World.h"
 #include "Globals/ObjectMgr.h"
+#include "Chat/ChatHandler.h"
 #include "Entities/Player.h"
 #include "Groups/Group.h"
 #include "Social/SocialMgr.h"
@@ -31,7 +32,6 @@
 #include "Entities/Vehicle.h"
 #include "Maps/TransportSystem.h"
 #include "Anticheat/Anticheat.hpp"
-#include "PlayerBot/Base/PlayerbotAI.h"
 
 /* differeces from off:
     -you can uninvite yourself - is is useful
@@ -76,8 +76,14 @@ namespace
         if (!initiator || !recipient || !reason)
             return;
 
-        if (PlayerbotAI* botAI = recipient->GetPlayerbotAI())
-            botAI->SendWhisper(reason, *initiator);
+        WorldSession* session = initiator->GetSession();
+        if (!session)
+            return;
+
+        WorldPacket data;
+        ChatHandler::BuildChatPacket(data, CHAT_MSG_WHISPER, reason, LANG_UNIVERSAL, recipient->GetChatTag(),
+                                    recipient->GetObjectGuid(), recipient->GetName(), initiator->GetObjectGuid(), initiator->GetName());
+        session->SendPacket(data);
     }
 }
 

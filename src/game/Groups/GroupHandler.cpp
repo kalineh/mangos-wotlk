@@ -31,6 +31,7 @@
 #include "Entities/Vehicle.h"
 #include "Maps/TransportSystem.h"
 #include "Anticheat/Anticheat.hpp"
+#include "PlayerBot/Base/PlayerbotAI.h"
 
 /* differeces from off:
     -you can uninvite yourself - is is useful
@@ -68,6 +69,18 @@ void WorldSession::SendGroupInvite(Player* player, bool alreadyInGroup /*= false
     player->GetSession()->SendPacket(data);
 }
 
+namespace
+{
+    inline void BotInviteFailureWhisper(Player* initiator, Player* recipient, const char* reason)
+    {
+        if (!initiator || !recipient || !reason)
+            return;
+
+        if (PlayerbotAI* botAI = recipient->GetPlayerbotAI())
+            botAI->SendWhisper(reason, *initiator);
+    }
+}
+
 void WorldSession::HandleGroupInviteOpcode(WorldPacket& recv_data)
 {
     std::string membername;
@@ -97,12 +110,14 @@ void WorldSession::HandleGroupInviteOpcode(WorldPacket& recv_data)
     if (!GetPlayer()->IsGameMaster() && !sWorld.getConfig(CONFIG_BOOL_ALLOW_TWO_SIDE_INTERACTION_GROUP) && initiator->GetTeam() != recipient->GetTeam())
     {
         SendPartyResult(PARTY_OP_INVITE, membername, ERR_PLAYER_WRONG_FACTION);
+        BotInviteFailureWhisper(initiator, recipient, "I can't accept invites from the opposite faction.");
         return;
     }
 
     if (initiator->GetInstanceId() != 0 && recipient->GetInstanceId() != 0 && initiator->GetInstanceId() != recipient->GetInstanceId() && initiator->GetMapId() == recipient->GetMapId())
     {
         SendPartyResult(PARTY_OP_INVITE, membername, ERR_TARGET_NOT_IN_INSTANCE_S);
+        BotInviteFailureWhisper(initiator, recipient, "I can only join if we're in the same instance.");
         return;
     }
 
@@ -110,12 +125,14 @@ void WorldSession::HandleGroupInviteOpcode(WorldPacket& recv_data)
     if (recipient->GetSocial()->HasIgnore(initiator->GetObjectGuid()))
     {
         SendPartyResult(PARTY_OP_INVITE, membername, ERR_IGNORING_YOU_S);
+        BotInviteFailureWhisper(initiator, recipient, "I'm currently ignoring you, so I can't accept invites.");
         return;
     }
 
     if (GetAnticheat()->IsSilenced())
     {
         SendPartyResult(PARTY_OP_INVITE, membername, ERR_PARTY_RESULT_OK);
+        BotInviteFailureWhisper(initiator, recipient, "I'm silenced by anticheat and can't accept invites right now.");
         return;
     }
 
@@ -128,6 +145,7 @@ void WorldSession::HandleGroupInviteOpcode(WorldPacket& recv_data)
     if (initiatorGroup && initiatorGroup->IsRaidGroup() && !recipient->GetAllowLowLevelRaid() && (recipient->GetLevel() < sWorld.getConfig(CONFIG_UINT32_MIN_LEVEL_FOR_RAID)))
     {
         SendPartyResult(PARTY_OP_INVITE, "", ERR_RAID_DISALLOWED_BY_LEVEL);
+        BotInviteFailureWhisper(initiator, recipient, "I'm too low level for that raid invite.");
         return;
     }
 
@@ -135,6 +153,7 @@ void WorldSession::HandleGroupInviteOpcode(WorldPacket& recv_data)
     if (recipient->GetGroupInvite())
     {
         SendPartyResult(PARTY_OP_INVITE, membername, ERR_ALREADY_IN_GROUP_S);
+        BotInviteFailureWhisper(initiator, recipient, "I already have a pending invite.");
         return;
     }
 
@@ -149,6 +168,7 @@ void WorldSession::HandleGroupInviteOpcode(WorldPacket& recv_data)
 
         // tell the player that they were invited but it failed as they were already in a group
         SendGroupInvite(recipient, true);
+        BotInviteFailureWhisper(initiator, recipient, "I'm already in another group.");
 
         return;
     }
@@ -186,6 +206,7 @@ void WorldSession::HandleGroupInviteOpcode(WorldPacket& recv_data)
         {
             initiatorGroup->RemoveAllInvites();
             delete initiatorGroup;
+            BotInviteFailureWhisper(initiator, recipient, "I couldn't be added to your group.");
             return;
         }
     }
@@ -194,6 +215,7 @@ void WorldSession::HandleGroupInviteOpcode(WorldPacket& recv_data)
         // already existing group: if can't add then just leave
         if (!initiatorGroup->AddInvite(recipient))
         {
+            BotInviteFailureWhisper(initiator, recipient, "I couldn't be added to your group.");
             return;
         }
     }

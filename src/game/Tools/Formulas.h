@@ -172,9 +172,9 @@ namespace MaNGOS
             if (target->IsElite())
             {
                 if (target->GetMap()->IsNonRaidDungeon())
-                    xp_gain *= 2.5f;
+                    xp_gain *= sWorld.getConfig(CONFIG_FLOAT_RATE_XP_ELITE_DUNGEON);
                 else
-                    xp_gain *= 2.0f;
+                    xp_gain *= sWorld.getConfig(CONFIG_FLOAT_RATE_XP_ELITE);
             }
 
             xp_gain *= target->GetCreatureInfo()->ExperienceMultiplier;

@@ -452,6 +452,8 @@ void World::LoadConfigSettings(bool reload)
     setConfigPos(CONFIG_FLOAT_RATE_XP_KILL_VANILLA,                      "Rate.XP.Kill.Vanilla",                      1.0f);
     setConfigPos(CONFIG_FLOAT_RATE_XP_KILL_BC,                           "Rate.XP.Kill.BC",                           1.0f);
     setConfigPos(CONFIG_FLOAT_RATE_XP_KILL_WOTLK,                        "Rate.XP.Kill.Wrath",                        1.0f);
+    setConfigPos(CONFIG_FLOAT_RATE_XP_ELITE,                             "Rate.XP.Elite",                             2.0f);
+    setConfigPos(CONFIG_FLOAT_RATE_XP_ELITE_DUNGEON,                     "Rate.XP.Elite.Dungeon",                     2.5f);
     setConfigPos(CONFIG_FLOAT_RATE_XP_QUEST,                             "Rate.XP.Quest",                             1.0f);
     setConfigPos(CONFIG_FLOAT_RATE_XP_QUEST_VANILLA,                     "Rate.XP.Quest.Vanilla",                     1.0f);
     setConfigPos(CONFIG_FLOAT_RATE_XP_QUEST_BC,                          "Rate.XP.Quest.BC",                          1.0f);

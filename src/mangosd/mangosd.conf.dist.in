@@ -1481,10 +1481,12 @@ Visibility.AIRelocationNotifyDelay = 1000
 #
 #    Rate.Pet.XP.Kill
 #    Rate.XP.Kill
+#    Rate.XP.Elite
+#    Rate.XP.Elite.Dungeon
 #    Rate.XP.Quest
 #    Rate.XP.Explore
 #        XP rates
-#        Default: 1
+#        Default: 1 (elite defaults: 2, 2.5 in non-raid dungeons)
 #
 #    Rate.Pet.XP.Kill.Vanilla
 #    Rate.Pet.XP.Kill.BC
@@ -1643,6 +1645,8 @@ Rate.Drop.Item.Quest = 1
 Rate.Drop.Money = 1
 Rate.Pet.XP.Kill = 1
 Rate.XP.Kill    = 1
+Rate.XP.Elite   = 2
+Rate.XP.Elite.Dungeon = 2.5
 Rate.XP.Quest   = 1
 Rate.XP.Explore = 1
 Rate.Pet.XP.Kill.Vanilla = 1

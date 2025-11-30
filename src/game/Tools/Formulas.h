@@ -148,7 +148,7 @@ namespace MaNGOS
                 uint32 nLevelDiff = mob_level - unit_level;
                 if (nLevelDiff > 4)
                     nLevelDiff = 4;
-                return nBaseExp * (1.0f + (0.05f * nLevelDiff));
+                return nBaseExp * (1.0f + (0.05f * (nLevelDiff * 2)));
             }
 
             if (!IsTrivialLevelDifference(unit_level, mob_level))

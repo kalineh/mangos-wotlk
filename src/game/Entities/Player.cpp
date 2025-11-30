@@ -5860,6 +5860,31 @@ bool Player::UpdateCraftSkill(uint32 spellid)
             }
 
             uint32 craft_skill_gain = sWorld.getConfig(CONFIG_UINT32_SKILL_GAIN_CRAFTING);
+            const uint32 grayLevel = skill->max_value;
+            const uint32 yellowLevel = skill->min_value;
+            const uint32 greenLevel = (grayLevel + yellowLevel) / 2;
+
+            auto GrantCraftExperience = [&](uint32 currentSkill)
+            {
+                uint32 baseXp;
+                if (currentSkill < skill->req_skill_value)
+                    baseXp = 50;
+                else if (currentSkill < yellowLevel)
+                    baseXp = 20;
+                else if (currentSkill < greenLevel)
+                    baseXp = 10;
+                else if (currentSkill < grayLevel)
+                    baseXp = 5;
+                else
+                    baseXp = 1;
+
+                uint32 tierBonus = currentSkill / 50;
+                uint32 totalXp = (baseXp * (10 + tierBonus) + 5) / 10;
+                if (totalXp > 0)
+                    GiveXP(totalXp, nullptr);
+            };
+
+            GrantCraftExperience(SkillValue);
 
             return UpdateSkillPro(skill->skillId, SkillGainChance(SkillValue,
                                   skill->max_value,
@@ -5880,6 +5905,30 @@ bool Player::UpdateGatherSkill(uint32 SkillId, uint32 SkillValue, uint32 RedLeve
     if (RedLevel == 1) // stuff that starts at 1 should stop at 105 not 101
         RedLevel = 5;
 
+    auto GrantGatherExperience = [&](void)
+    {
+        const uint32 grayLevel = RedLevel + 100;
+        const uint32 greenLevel = RedLevel + 50;
+        const uint32 yellowLevel = RedLevel + 25;
+
+        uint32 baseXp;
+        if (SkillValue < RedLevel)
+            baseXp = 50;
+        else if (SkillValue < yellowLevel)
+            baseXp = 20;
+        else if (SkillValue < greenLevel)
+            baseXp = 10;
+        else if (SkillValue < grayLevel)
+            baseXp = 5;
+        else
+            baseXp = 1;
+
+        uint32 tierBonus = SkillValue / 50;
+        uint32 totalXp = (baseXp * (10 + tierBonus) + 5) / 10;
+        if (totalXp > 0)
+            GiveXP(totalXp, nullptr);
+    };
+
     // For skinning and Mining chance decrease with level. 1-74 - no decrease, 75-149 - 2 times, 225-299 - 8 times
     switch (SkillId)
     {
@@ -5887,15 +5936,18 @@ bool Player::UpdateGatherSkill(uint32 SkillId, uint32 SkillValue, uint32 RedLeve
         case SKILL_LOCKPICKING:
         case SKILL_JEWELCRAFTING:
         case SKILL_INSCRIPTION:
+            GrantGatherExperience();
             return UpdateSkillPro(SkillId, SkillGainChance(SkillValue, RedLevel + 100, RedLevel + 50, RedLevel + 25) * Multiplicator, gathering_skill_gain);
         case SKILL_SKINNING:
         {
+            GrantGatherExperience();
             if (sWorld.getConfig(CONFIG_UINT32_SKILL_CHANCE_SKINNING_STEPS) == 0)
                 return UpdateSkillPro(SkillId, SkillGainChance(SkillValue, RedLevel + 100, RedLevel + 50, RedLevel + 25) * Multiplicator, gathering_skill_gain);
             return UpdateSkillPro(SkillId, (SkillGainChance(SkillValue, RedLevel + 100, RedLevel + 50, RedLevel + 25) * Multiplicator) >> (SkillValue / sWorld.getConfig(CONFIG_UINT32_SKILL_CHANCE_SKINNING_STEPS)), gathering_skill_gain);
         }
         case SKILL_MINING:
         {
+            GrantGatherExperience();
             if (sWorld.getConfig(CONFIG_UINT32_SKILL_CHANCE_MINING_STEPS) == 0)
                 return UpdateSkillPro(SkillId, SkillGainChance(SkillValue, RedLevel + 100, RedLevel + 50, RedLevel + 25) * Multiplicator, gathering_skill_gain);
             return UpdateSkillPro(SkillId, (SkillGainChance(SkillValue, RedLevel + 100, RedLevel + 50, RedLevel + 25) * Multiplicator) >> (SkillValue / sWorld.getConfig(CONFIG_UINT32_SKILL_CHANCE_MINING_STEPS)), gathering_skill_gain);
